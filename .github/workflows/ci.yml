@@ -1,47 +1,47 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
 
-      - name: Cài dependency
-        run: pip install -r requirements.txt
+            - name: Cài dependency
+              run: pip install -r requirements.txt
 
-      - name: Chạy checkpoint (bỏ test cần deploy sống)
-        env:
-          API_TOKEN: ci-dummy
-          REDIS_URL: "fake://"
-        run: pytest tests/ -v --ignore=tests/test_cp5.py --ignore=tests/test_bonus_cicd.py -m "not docker"
+            - name: Chạy checkpoint
+              env:
+                  API_TOKEN: ci-dummy
+                  REDIS_URL: "fake://"
+              run: pytest tests/ -v --ignore=tests/test_cp5.py --ignore=tests/test_bonus_cicd.py -m "not docker"
 
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t day12-chat:ci .
+            - name: Build Docker image
+              run: docker build -t day12-chat:ci .
 
-  deploy:
-    needs: [test, build]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Render deploy hook
-        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+    deploy:
+        needs: [test, build]
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Trigger Render deploy hook
+              run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
 
-      - name: Smoke test
-        run: |
-          curl -fsS --retry 15 --retry-delay 10 --retry-all-errors \
-            --retry-connrefused "${{ vars.PUBLIC_URL }}/healthz"
+            - name: Smoke test
+              run: |
+                  curl -fsS --retry 15 --retry-delay 10 --retry-all-errors \
+                    --retry-connrefused "${{ vars.PUBLIC_URL }}/healthz"
