@@ -26,3 +26,7 @@ solution/
 
 # Tài liệu nội bộ của giảng viên — không đẩy lên repo phát cho học viên
 solution/
+
+/lab_docs
+
+/.claude
