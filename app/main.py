@@ -17,7 +17,7 @@ from contextlib import asynccontextmanager
 from functools import lru_cache
 
 from fastapi import Depends, FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from utils.mock_llm import generate_reply
@@ -29,6 +29,7 @@ from .lifecycle import shutdown_guard
 from .logging_utils import emit
 from .rate_limiter import TokenBucket
 from .store import ChatStore, get_redis_client
+from .webui import INDEX_HTML
 
 SERVICE_NAME = "day12-chat-service"
 SERVICE_VERSION = "1.0.0"
@@ -73,6 +74,14 @@ app = FastAPI(title="Day 12 Chat Service", version=SERVICE_VERSION, lifespan=lif
 
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
+
+
+# ─────────────────────────────────────────────────────────────
+# Giao diện demo — KHÔNG thuộc phạm vi chấm điểm
+# ─────────────────────────────────────────────────────────────
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def index():
+    return INDEX_HTML
 
 
 # ─────────────────────────────────────────────────────────────
